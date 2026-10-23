@@ -1,6 +1,6 @@
 ﻿; Instalador de Arcano (Inno Setup 6).
 ; Se compila desde scripts/publicar.ps1, que pasa la versión y la carpeta publicada:
-;   ISCC /DVersion=0.2.0/DOrigen=..\publicar\Arcano /O..\publicar instalador\Arcano.iss
+;   ISCC /DVersion=0.2.0 /DOrigen=..\publicar\Arcano /O..\publicar instalador\Arcano.iss
 ;
 ; Instala por usuario (sin permisos de administrador) en %LOCALAPPDATA%\Programs\Arcano.
 ; Quien tenga permisos puede elegir instalar para todos los usuarios.
