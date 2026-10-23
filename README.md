@@ -9,6 +9,12 @@ Es un programa de escritorio para Windows. El motor es una biblioteca .NET
 independiente de la interfaz, de modo que puede integrarse en otros sistemas
 (una API que use `Testado.Motor` y un frontend que reutilice el editor).
 
+## Descarga
+
+Instalador y versión portátil para Windows 10/11 de 64 bits en
+[Releases](https://github.com/PabloMarmolejo/Testado/releases/latest). Antes de
+usarlo, capture los fundamentos legales de su institución en **Catálogo**.
+
 ## Cómo funciona
 
 1. **Abrir.** PDF directo; Word (.docx, .doc, .rtf, .odt) se convierte a PDF
