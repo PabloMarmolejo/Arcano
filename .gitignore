@@ -21,7 +21,7 @@ muestras/*
 publicar/
 
 # Trabajo y resultados generados sobre las muestras
-*.testado
+*.arcano
 * - versión pública.pdf
 
 # Compilación incremental de TypeScript

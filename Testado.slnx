@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Testado.Escritorio/Testado.Escritorio.csproj" />
-    <Project Path="src/Testado.Motor/Testado.Motor.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Testado.Motor.Pruebas/Testado.Motor.Pruebas.csproj" />
-  </Folder>
-</Solution>

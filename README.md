@@ -1,18 +1,26 @@
-# Testado
+<img src="recursos/marca/arcano.png" alt="" width="72" align="left" />
 
-Generador de versiones públicas para documentos de autoridades mexicanas.
-Permite testar datos personales en documentos PDF o Word y produce un PDF nuevo
-en el que **lo testado no existe**: no hay texto debajo de los recuadros ni
-capas que se puedan quitar.
+# Arcano
+
+**Generador de versiones públicas**
+
+<br clear="left" />
+
+Testa datos personales en documentos PDF o Word de autoridades mexicanas y
+produce un PDF nuevo en el que **lo testado no existe**: no hay texto debajo de
+los recuadros ni capas que se puedan quitar.
+
+> Hasta la versión 0.1 se llamó *Testado*. Arcano lee los trabajos `.testado`
+> y conserva el catálogo capturado.
 
 Es un programa de escritorio para Windows. El motor es una biblioteca .NET
 independiente de la interfaz, de modo que puede integrarse en otros sistemas
-(una API que use `Testado.Motor` y un frontend que reutilice el editor).
+(una API que use `Arcano.Motor` y un frontend que reutilice el editor).
 
 ## Descarga
 
 Instalador y versión portátil para Windows 10/11 de 64 bits en
-[Releases](https://github.com/PabloMarmolejo/Testado/releases/latest). Antes de
+[Releases](https://github.com/PabloMarmolejo/Arcano/releases/latest). Antes de
 usarlo, capture los fundamentos legales de su institución en **Catálogo**.
 
 ## Cómo funciona
@@ -42,13 +50,13 @@ usarlo, capture los fundamentos legales de su institución en **Catálogo**.
    anotaciones, adjuntos ni metadatos del original, y que ningún texto testado
    se pueda leer en él.
 
-El trabajo se guarda junto al documento como `<archivo>.testado` (JSON con las
+El trabajo se guarda junto al documento como `<archivo>.arcano` (JSON con las
 zonas), ligado al documento por su SHA-256.
 
 ## Estructura
 
 ```
-src/Testado.Motor        Biblioteca .NET 10 (multiplataforma)
+src/Arcano.Motor        Biblioteca .NET 10 (multiplataforma)
   Pdfium/                Enlace con PDFium: render, texto con coordenadas, imágenes
   Texto/                 Texto de página normalizado (sin acentos) con mapa a cajas
   Ocr/                   Tesseract
@@ -56,11 +64,11 @@ src/Testado.Motor        Biblioteca .NET 10 (multiplataforma)
   Generacion/            Versión pública, leyenda y verificación
   Catalogo/              Categorías de datos personales (catalogo.json)
   Conversion/            Word → PDF
-src/Testado.Escritorio   WPF + WebView2: hospeda la interfaz y expone el motor (Puente.cs)
+src/Arcano.Escritorio   WPF + WebView2: hospeda la interfaz y expone el motor (Puente.cs)
 ui/                      React + TypeScript + pdf.js (Vite)
 tests/                   Pruebas del motor (xUnit); la interfaz usa Vitest
 scripts/publicar.ps1     Paquete autocontenido e instalador para Windows x64
-instalador/Testado.iss   Script de Inno Setup
+instalador/Arcano.iss   Script de Inno Setup
 recursos/marca           Ícono (scripts/generar-icono.py)
 ```
 
@@ -76,18 +84,18 @@ Requisitos: .NET SDK 10, Node 24, Windows con WebView2.
 ```powershell
 dotnet test                                   # pruebas del motor
 cd ui; npm install; npm test                  # pruebas de la interfaz
-dotnet build src/Testado.Escritorio           # compila también la interfaz
-src/Testado.Escritorio/bin/Debug/net10.0-windows/win-x64/Testado.exe [archivo.pdf]
+dotnet build src/Arcano.Escritorio           # compila también la interfaz
+src/Arcano.Escritorio/bin/Debug/net10.0-windows/win-x64/Arcano.exe [archivo.pdf]
 ```
 
 Para trabajar en la interfaz con recarga en caliente:
 
 ```powershell
 cd ui; npm run dev
-$env:TESTADO_UI = 'http://localhost:5173'; dotnet run --project src/Testado.Escritorio -p:OmitirUi=true
+$env:ARCANO_UI = 'http://localhost:5173'; dotnet run --project src/Arcano.Escritorio -p:OmitirUi=true
 ```
 
-Con `TESTADO_UI` se habilitan además las herramientas de desarrollo (F12).
+Con `ARCANO_UI` se habilitan además las herramientas de desarrollo (F12).
 
 El modelo de OCR (`spa.traineddata`, 18 MB) se descarga en `recursos/tessdata`
 la primera vez que se compila.
@@ -101,12 +109,12 @@ pwsh scripts/publicar.ps1
 
 Genera en `publicar/`:
 
-- `Testado-<versión>-instalador.exe`: instalador para el usuario, sin permisos de
-  administrador (va a `%LOCALAPPDATA%\Programs\Testado`; con permisos se puede
+- `Arcano-<versión>-instalador.exe`: instalador para el usuario, sin permisos de
+  administrador (va a `%LOCALAPPDATA%\Programs\Arcano`; con permisos se puede
   instalar para todos). Crea el acceso en el menú Inicio, agrega «Abrir con →
-  Testado» para PDF y Word, y asocia los archivos `.testado`. Avisa si faltan
+  Arcano» para PDF y Word, y asocia los archivos `.arcano`. Avisa si faltan
   WebView2 o Visual C++.
-- `Testado-<versión>-win-x64.zip`: la misma carpeta, para copiar sin instalar.
+- `Arcano-<versión>-win-x64.zip`: la misma carpeta, para copiar sin instalar.
 
 El equipo destino necesita Windows 10/11 con WebView2 Runtime (viene con Edge)
 y Visual C++ 2015-2022 x64 (lo usa el OCR). Para abrir Word, Microsoft Word o
@@ -117,7 +125,7 @@ Windows SmartScreen muestra «Windows protegió su equipo». Se continúa con
 *Más información → Ejecutar de todas formas*. Si se copia desde una carpeta de
 la red interna normalmente no aparece el aviso.
 
-Datos del usuario en `%LOCALAPPDATA%\Testado`: `catalogo.json`,
+Datos del usuario en `%LOCALAPPDATA%\Arcano`: `catalogo.json`,
 `preferencias.json` y `bitacora.log` (solo errores técnicos, sin contenido de
 documentos).
 
@@ -129,7 +137,7 @@ documentos).
   y, si hace falta, uno propio por categoría. Ahí también se configuran los
   dominios de correo institucionales y se puede **exportar** el catálogo para
   que otras personas lo **importen**. Se guarda en
-  `%LOCALAPPDATA%\Testado\catalogo.json`.
+  `%LOCALAPPDATA%\Arcano\catalogo.json`.
 - Firma de código del instalador (por ejemplo, SignPath para proyectos de código abierto).
 - Integración con sistemas de expedientes: endpoint que reciba el documento y
   las zonas, y precargar como términos de búsqueda las partes del expediente.

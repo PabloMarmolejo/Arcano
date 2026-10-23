@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import type { RectN } from '../tipos'
 import { Pagina } from './Pagina'
 
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function Visor({ alDesplazar, alMedir }: Props) {
-  const t = useTestado()
+  const t = useArcano()
   const caja = useRef<HTMLDivElement>(null)
   const { registrarIrA } = t
 

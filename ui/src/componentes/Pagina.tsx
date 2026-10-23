@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as PE } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { acotar, claveCoincidencia, desdeBordes, nuevoId, seIntersectan, union } from '../geometria'
 import { dibujarPagina } from '../pdf'
 import { llamar } from '../puente'
@@ -38,7 +38,7 @@ function cajasPorRenglon(palabras: Palabra[]): RectN[] {
 }
 
 function PaginaBase({ info, anchoCss }: Props) {
-  const t = useTestado()
+  const t = useArcano()
   const { estado, despachar, pdf, vistaPrevia, herramienta, candidatas, foco } = t
   const contenedor = useRef<HTMLDivElement>(null)
   const lienzo = useRef<HTMLCanvasElement>(null)

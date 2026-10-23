@@ -207,7 +207,23 @@ input[type='checkbox'] {
 }
 .bienvenida h1 {
   margin: 0;
-  font-size: 26px;
+  font-size: 34px;
+  letter-spacing: 0.01em;
+}
+.bienvenida .subtitulo {
+  margin: -6px 0 6px;
+  font-size: 17px;
+  color: var(--acento);
+  font-weight: 600;
+}
+.bienvenida .logo {
+  border-radius: 22px;
+}
+.marca-subtitulo {
+  font-weight: 400;
+  color: var(--texto-2);
+  margin-left: 10px;
+  letter-spacing: 0;
 }
 .bienvenida p {
   color: var(--texto-2);

@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { ErrorPuente, llamar } from '../puente'
 import type { Coincidencia, ImagenPagina } from '../tipos'
 import { ListaCoincidencias, SelectorCategoria } from './Comunes'
 
 /** Detectores automáticos de datos personales e imágenes del documento. */
 export function PanelDetectar() {
-  const t = useTestado()
+  const t = useArcano()
   const [elegidos, setElegidos] = useState<Set<string>>(new Set(t.inicio.detectores.map((d) => d.id)))
   const [resultado, setResultado] = useState<Coincidencia[] | null>(null)
   const [trabajando, setTrabajando] = useState(false)

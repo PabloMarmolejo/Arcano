@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { ErrorPuente, llamar } from '../puente'
 import type { Coincidencia, InfoPagina } from '../tipos'
 import { ListaCoincidencias } from './Comunes'
@@ -10,7 +10,7 @@ interface Props {
 
 /** Revisión previa: páginas sin texto, apariciones que quedaron sin testar, zonas sin categoría. */
 export function PanelRevision({ alReconocer }: Props) {
-  const t = useTestado()
+  const t = useArcano()
   const [repeticiones, setRepeticiones] = useState<Coincidencia[] | null>(null)
   const [revisando, setRevisando] = useState(false)
   const [incluirConTexto, setIncluirConTexto] = useState(false)

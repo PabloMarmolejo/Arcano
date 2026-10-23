@@ -1,4 +1,4 @@
-// Tipos que intercambia la interfaz con el motor (Testado.Motor, en JSON camelCase).
+// Tipos que intercambia la interfaz con el motor (Arcano.Motor, en JSON camelCase).
 
 /** Rectángulo normalizado (0–1) sobre la página ya rotada; origen arriba a la izquierda. */
 export interface RectN {

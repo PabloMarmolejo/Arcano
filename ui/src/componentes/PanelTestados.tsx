@@ -1,4 +1,4 @@
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import type { Region } from '../tipos'
 import { SelectorCategoria } from './Comunes'
 
@@ -15,7 +15,7 @@ const nombreOrigen = (o: string, detectores: { id: string; nombre: string }[]) =
 
 /** Lista de zonas testadas, una entrada por aparición (las cajas de un mismo grupo van juntas). */
 export function PanelTestados() {
-  const t = useTestado()
+  const t = useArcano()
   const { estado, despachar } = t
 
   const apariciones: Region[][] = []

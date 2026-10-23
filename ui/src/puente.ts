@@ -53,7 +53,7 @@ host?.addEventListener('message', (e) => {
 export const enEscritorio = host !== undefined
 
 export function llamar<T>(metodo: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (!host) return Promise.reject(new ErrorPuente('La interfaz debe abrirse desde el programa Testado.'))
+  if (!host) return Promise.reject(new ErrorPuente('La interfaz debe abrirse desde el programa Arcano.'))
   const id = siguiente++
   return new Promise<T>((resolver, rechazar) => {
     pendientes.set(id, { resolver: resolver as (v: unknown) => void, rechazar })

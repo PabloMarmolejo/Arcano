@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { ErrorPuente, llamar } from '../puente'
 import type { Coincidencia } from '../tipos'
 import { ListaCoincidencias, SelectorCategoria } from './Comunes'
@@ -12,7 +12,7 @@ interface Props {
 
 /** Busca un nombre o frase en todo el documento (sin distinguir acentos ni mayúsculas). */
 export function PanelBuscar({ terminos, alAgregarTermino }: Props) {
-  const t = useTestado()
+  const t = useArcano()
   const [termino, setTermino] = useState('')
   const [palabraCompleta, setPalabraCompleta] = useState(true)
   const [variantes, setVariantes] = useState(true)

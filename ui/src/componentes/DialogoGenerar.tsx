@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fundamentoPendiente } from '../catalogo'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { alProgreso, ErrorPuente, llamar } from '../puente'
 import type { Coincidencia, DatosLeyenda, OpcionesGeneracion, Progreso, ResultadoGeneracion } from '../tipos'
 
@@ -21,7 +21,7 @@ const campos: { clave: keyof DatosLeyenda; etiqueta: string; ayuda?: string; lar
 ]
 
 export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarProyecto, alRevisar, alEditarCatalogo }: Props) {
-  const t = useTestado()
+  const t = useArcano()
   const [opciones, setOpciones] = useState<OpcionesGeneracion>(t.inicio.preferencias.opciones)
   const [fase, setFase] = useState<Fase>('datos')
   const [pendientes, setPendientes] = useState<Coincidencia[]>([])

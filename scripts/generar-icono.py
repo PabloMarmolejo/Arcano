@@ -1,4 +1,4 @@
-"""Genera recursos/marca/testado.ico y testado.png: hoja con renglones, algunos testados."""
+"""Genera recursos/marca/arcano.ico y arcano.png (también copiado a ui/public): hoja con renglones, algunos testados."""
 from pathlib import Path
 from PIL import Image, ImageDraw
 
@@ -36,8 +36,9 @@ def dibujar(lado: int) -> Image.Image:
 def main() -> None:
     RAIZ.mkdir(parents=True, exist_ok=True)
     grande = dibujar(256)
-    grande.save(RAIZ / "testado.png")
-    grande.save(RAIZ / "testado.ico", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    grande.save(RAIZ / "arcano.png")
+    grande.save(RAIZ.parent.parent / "ui" / "public" / "arcano.png")
+    grande.save(RAIZ / "arcano.ico", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 
 
 if __name__ == "__main__":

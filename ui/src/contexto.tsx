@@ -38,10 +38,10 @@ export interface Contexto {
   categoria: (id?: string | null) => Categoria | undefined
 }
 
-export const ContextoTestado = createContext<Contexto | null>(null)
+export const ContextoArcano = createContext<Contexto | null>(null)
 
-export function useTestado(): Contexto {
-  const c = useContext(ContextoTestado)
-  if (!c) throw new Error('useTestado fuera del documento')
+export function useArcano(): Contexto {
+  const c = useContext(ContextoArcano)
+  if (!c) throw new Error('useArcano fuera del documento')
   return c
 }

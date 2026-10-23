@@ -7,9 +7,9 @@
 
     <!-- Información del ensamblado -->
     <Authors>Luis Pablo Marmolejo Ramírez</Authors>
-    <Product>Testado - Generador de versiones públicas</Product>
+    <Product>Arcano - Generador de versiones públicas</Product>
     <Copyright>Copyright © 2026 Luis Pablo Marmolejo Ramírez</Copyright>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
 
     <!-- Análisis de código -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>

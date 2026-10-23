@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { claveCoincidencia, coincidenciaCubierta, regionesDe } from '../geometria'
 import type { Coincidencia } from '../tipos'
 
@@ -14,7 +14,7 @@ export function SelectorCategoria({
   vacia?: string
   etiqueta?: string
 }) {
-  const { inicio } = useTestado()
+  const { inicio } = useArcano()
   const grupos = useMemo(() => {
     const m = new Map<string, typeof inicio.catalogo.categorias>()
     for (const c of inicio.catalogo.categorias) m.set(c.grupo, [...(m.get(c.grupo) ?? []), c])
@@ -64,7 +64,7 @@ interface ListaProps {
  * las que ya están cubiertas por una zona se muestran como testadas.
  */
 export function ListaCoincidencias({ coincidencias, agruparPor, categoriaPorDefecto, vacio }: ListaProps) {
-  const t = useTestado()
+  const t = useArcano()
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set())
 
   useEffect(() => {

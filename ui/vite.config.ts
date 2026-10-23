@@ -21,7 +21,7 @@ const politica: Plugin = {
   ],
 }
 
-// La interfaz se sirve desde el origen https://app.testado dentro de WebView2.
+// La interfaz se sirve desde el origen https://app.arcano dentro de WebView2.
 export default defineConfig({
   plugins: [react(), politica],
   base: '/',

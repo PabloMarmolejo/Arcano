@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Arcano.Escritorio</RootNamespace>
+    <AssemblyName>Arcano</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\recursos\marca\arcano.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\recursos\marca\arcano.ico" Link="arcano.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcano.Motor\Arcano.Motor.csproj" />
+  </ItemGroup>
+
+  <!--
+    La interfaz (ui/) se compila con Vite y se copia a wwwroot. En Debug se puede
+    trabajar con el servidor de Vite: ARCANO_UI=http://localhost:5173.
+  -->
+  <PropertyGroup>
+    <UiDir>$(MSBuildThisFileDirectory)..\..\ui\</UiDir>
+  </PropertyGroup>
+
+  <Target Name="CompilarUi" BeforeTargets="BeforeBuild" Condition="'$(OmitirUi)' != 'true'">
+    <Exec Command="npm ci" WorkingDirectory="$(UiDir)" Condition="!Exists('$(UiDir)node_modules')" />
+    <Exec Command="npm run build" WorkingDirectory="$(UiDir)" />
+  </Target>
+
+  <Target Name="CopiarUi" AfterTargets="Build" Condition="'$(OmitirUi)' != 'true'">
+    <ItemGroup>
+      <ArchivosUi Include="$(UiDir)dist\**\*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(OutDir)wwwroot" />
+    <Copy SourceFiles="@(ArchivosUi)" DestinationFolder="$(OutDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublicarUi" AfterTargets="Publish" Condition="'$(OmitirUi)' != 'true'">
+    <ItemGroup>
+      <ArchivosUiPub Include="$(UiDir)dist\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ArchivosUiPub)" DestinationFolder="$(PublishDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

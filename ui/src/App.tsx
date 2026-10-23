@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
-import { ContextoTestado } from './contexto'
+import { ContextoArcano } from './contexto'
 import type { Aviso, Contexto, Herramienta } from './contexto'
 import { estadoInicial, idsDelGrupo, reductor } from './estado'
 import { cargarPdf } from './pdf'
@@ -241,7 +241,7 @@ export function App() {
     if (estado.seleccion) despachar({ tipo: 'categoria', ids: idsDelGrupo(estado.regiones, estado.seleccion), categoriaId: id })
   }
 
-  if (!enEscritorio) return <div className="pantalla-centro">Abra esta interfaz desde el programa Testado.</div>
+  if (!enEscritorio) return <div className="pantalla-centro">Abra esta interfaz desde el programa Arcano.</div>
   if (errorInicio) return <div className="pantalla-centro alerta">No se pudo iniciar: {errorInicio}</div>
   if (!inicio) return <div className="pantalla-centro">Cargando…</div>
 
@@ -252,7 +252,10 @@ export function App() {
   const cuerpo = (
     <div className="app">
       <header className="barra">
-        <div className="marca">Testado</div>
+        <div className="marca" title="Arcano · Generador de versiones públicas">
+          Arcano
+          {!doc && <span className="marca-subtitulo">Generador de versiones públicas</span>}
+        </div>
         <button onClick={() => abrir()} title="Abrir PDF o Word (Ctrl+O)">
           Abrir…
         </button>
@@ -309,7 +312,9 @@ export function App() {
 
       {!contexto ? (
         <main className="bienvenida">
-          <h1>Generador de versiones públicas</h1>
+          <img className="logo" src="/arcano.png" alt="" width="96" height="96" />
+          <h1>Arcano</h1>
+          <p className="subtitulo">Generador de versiones públicas</p>
           <p>Abra un PDF o un documento de Word para testar los datos personales.</p>
           <button className="primario grande" onClick={() => abrir()}>
             Abrir documento…
@@ -317,7 +322,7 @@ export function App() {
           <ul className="claves">
             <li>El resultado es un PDF nuevo en el que lo testado no existe: no se puede recuperar quitando recuadros.</li>
             <li>Las páginas escaneadas también se pueden buscar con reconocimiento de texto.</li>
-            <li>El trabajo se guarda junto al documento como «.testado» para continuarlo después.</li>
+            <li>El trabajo se guarda junto al documento como «.arcano» para continuarlo después.</li>
           </ul>
           <p className="version">Versión {inicio.version}</p>
         </main>
@@ -429,5 +434,5 @@ export function App() {
     </div>
   )
 
-  return contexto ? <ContextoTestado.Provider value={contexto}>{cuerpo}</ContextoTestado.Provider> : cuerpo
+  return contexto ? <ContextoArcano.Provider value={contexto}>{cuerpo}</ContextoArcano.Provider> : cuerpo
 }

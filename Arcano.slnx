@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Arcano.Escritorio/Arcano.Escritorio.csproj" />
+    <Project Path="src/Arcano.Motor/Arcano.Motor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Arcano.Motor.Pruebas/Arcano.Motor.Pruebas.csproj" />
+  </Folder>
+</Solution>

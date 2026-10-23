@@ -1,12 +1,12 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { useTestado } from '../contexto'
+import { useArcano } from '../contexto'
 import { dibujarPagina } from '../pdf'
 import type { InfoPagina } from '../tipos'
 
 const ANCHO = 112
 
 function Miniatura({ info, activa, testados }: { info: InfoPagina; activa: boolean; testados: number }) {
-  const { pdf, irA } = useTestado()
+  const { pdf, irA } = useArcano()
   const lienzo = useRef<HTMLCanvasElement>(null)
   const [visible, setVisible] = useState(false)
   const caja = useRef<HTMLButtonElement>(null)
@@ -50,7 +50,7 @@ function Miniatura({ info, activa, testados }: { info: InfoPagina; activa: boole
 const MiniaturaMemo = memo(Miniatura)
 
 export function Miniaturas({ paginaActual }: { paginaActual: number }) {
-  const { doc, estado } = useTestado()
+  const { doc, estado } = useArcano()
   const porPagina = new Map<number, Set<string>>()
   for (const r of estado.regiones) {
     const s = porPagina.get(r.pagina) ?? new Set<string>()
