@@ -1,4 +1,4 @@
-; Instalador de Testado (Inno Setup 6).
+﻿; Instalador de Testado (Inno Setup 6).
 ; Se compila desde scripts/publicar.ps1, que pasa la versión y la carpeta publicada:
 ;   ISCC /DVersion=0.1.0 /DOrigen=..\publicar\Testado /O..\publicar instalador\Testado.iss
 ;
