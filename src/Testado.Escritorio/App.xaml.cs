@@ -19,7 +19,13 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        if (e.Args.Length > 0 && File.Exists(e.Args[0])) ArchivoInicial = Path.GetFullPath(e.Args[0]);
+        if (e.Args.Length > 0 && File.Exists(e.Args[0]))
+        {
+            var ruta = Path.GetFullPath(e.Args[0]);
+            // Un proyecto «documento.pdf.testado» abre su documento, que a su vez carga el proyecto.
+            if (ruta.EndsWith(".testado", StringComparison.OrdinalIgnoreCase)) ruta = ruta[..^".testado".Length];
+            if (File.Exists(ruta)) ArchivoInicial = ruta;
+        }
         base.OnStartup(e);
     }
 

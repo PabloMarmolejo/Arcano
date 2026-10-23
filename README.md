@@ -53,7 +53,9 @@ src/Testado.Motor        Biblioteca .NET 10 (multiplataforma)
 src/Testado.Escritorio   WPF + WebView2: hospeda la interfaz y expone el motor (Puente.cs)
 ui/                      React + TypeScript + pdf.js (Vite)
 tests/                   Pruebas del motor (xUnit); la interfaz usa Vitest
-scripts/publicar.ps1     Paquete autocontenido para Windows x64
+scripts/publicar.ps1     Paquete autocontenido e instalador para Windows x64
+instalador/Testado.iss   Script de Inno Setup
+recursos/marca           Ícono (scripts/generar-icono.py)
 ```
 
 Todas las coordenadas viajan como `RectN`: rectángulo normalizado (0–1) sobre
@@ -87,13 +89,29 @@ la primera vez que se compila.
 ## Publicar
 
 ```powershell
-pwsh scripts/publicar.ps1    # → publicar/Testado-<versión>-win-x64.zip
+winget install JRSoftware.InnoSetup   # una vez, para el instalador
+pwsh scripts/publicar.ps1
 ```
 
-El equipo destino necesita Windows 10/11 con WebView2 Runtime (viene con Edge)
-y Visual C++ 2015-2022 x64. Para abrir Word, Microsoft Word o LibreOffice.
+Genera en `publicar/`:
 
-Datos del usuario en `%LOCALAPPDATA%\Testado`: `catalogo.json` (editable),
+- `Testado-<versión>-instalador.exe`: instalador para el usuario, sin permisos de
+  administrador (va a `%LOCALAPPDATA%\Programs\Testado`; con permisos se puede
+  instalar para todos). Crea el acceso en el menú Inicio, agrega «Abrir con →
+  Testado» para PDF y Word, y asocia los archivos `.testado`. Avisa si faltan
+  WebView2 o Visual C++.
+- `Testado-<versión>-win-x64.zip`: la misma carpeta, para copiar sin instalar.
+
+El equipo destino necesita Windows 10/11 con WebView2 Runtime (viene con Edge)
+y Visual C++ 2015-2022 x64 (lo usa el OCR). Para abrir Word, Microsoft Word o
+LibreOffice. Al desinstalar se conservan el catálogo y las preferencias.
+
+**Firma.** El instalador no está firmado: al abrirlo después de descargarlo,
+Windows SmartScreen muestra «Windows protegió su equipo». Se continúa con
+*Más información → Ejecutar de todas formas*. Si se copia desde una carpeta de
+la red interna normalmente no aparece el aviso.
+
+Datos del usuario en `%LOCALAPPDATA%\Testado`: `catalogo.json`,
 `preferencias.json` y `bitacora.log` (solo errores técnicos, sin contenido de
 documentos).
 
@@ -106,7 +124,7 @@ documentos).
   dominios de correo institucionales y se puede **exportar** el catálogo para
   que otras personas lo **importen**. Se guarda en
   `%LOCALAPPDATA%\Testado\catalogo.json`.
-- Instalador (MSIX o Inno Setup) y asociación con «Abrir con…».
+- Firma de código del instalador (por ejemplo, SignPath para proyectos de código abierto).
 - Integración con sistemas de expedientes: endpoint que reciba el documento y
   las zonas, y precargar como términos de búsqueda las partes del expediente.
 

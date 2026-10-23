@@ -1,7 +1,8 @@
 # Publica Testado para Windows x64 como carpeta autocontenida (no requiere .NET
-# instalado) y la comprime en un .zip listo para copiar a los equipos.
+# instalado), la comprime en un .zip y, si está Inno Setup 6, arma el instalador.
 #
-#   pwsh scripts/publicar.ps1            → publicar\Testado-<versión>-win-x64.zip
+#   pwsh scripts/publicar.ps1    → publicar\Testado-<versión>-win-x64.zip
+#                                  publicar\Testado-<versión>-instalador.exe
 #
 # Requisitos en el equipo destino: Windows 10/11 con WebView2 Runtime (viene con
 # Edge) y Visual C++ 2015-2022 x64 (lo usa el OCR). Para abrir Word: Microsoft
@@ -29,3 +30,18 @@ $zip = Join-Path $salida "Testado-$version-win-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path $carpeta -DestinationPath $zip
 Write-Host "Listo: $zip ($([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB)"
+
+# Instalador (Inno Setup 6: winget install JRSoftware.InnoSetup)
+$iscc = @(
+    (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe'),
+    (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
+    (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
+) | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $iscc) {
+    Write-Warning 'No se encontró Inno Setup 6: se omite el instalador.'
+    return
+}
+& $iscc /Q "/DVersion=$version" "/DOrigen=$carpeta" "/O$salida" (Join-Path $raiz 'instalador\Testado.iss')
+if ($LASTEXITCODE -ne 0) { throw 'Falló la compilación del instalador.' }
+$instalador = Join-Path $salida "Testado-$version-instalador.exe"
+Write-Host "Listo: $instalador ($([math]::Round((Get-Item $instalador).Length / 1MB, 1)) MB)"
