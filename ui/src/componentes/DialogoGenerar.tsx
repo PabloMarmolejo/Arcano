@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fundamentoPendiente } from '../catalogo'
 import { useTestado } from '../contexto'
 import { alProgreso, ErrorPuente, llamar } from '../puente'
 import type { Coincidencia, DatosLeyenda, OpcionesGeneracion, Progreso, ResultadoGeneracion } from '../tipos'
@@ -9,6 +10,7 @@ interface Props {
   alCerrar: () => void
   alGuardarProyecto: () => Promise<void>
   alRevisar: () => void
+  alEditarCatalogo: () => void
 }
 
 type Fase = 'datos' | 'aviso' | 'generando' | 'listo'
@@ -18,7 +20,7 @@ const campos: { clave: keyof DatosLeyenda; etiqueta: string; ayuda?: string; lar
   { clave: 'textoAdicional', etiqueta: 'Texto adicional', largo: true },
 ]
 
-export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarProyecto, alRevisar }: Props) {
+export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarProyecto, alRevisar, alEditarCatalogo }: Props) {
   const t = useTestado()
   const [opciones, setOpciones] = useState<OpcionesGeneracion>(t.inicio.preferencias.opciones)
   const [fase, setFase] = useState<Fase>('datos')
@@ -33,6 +35,10 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
 
   const sinCategoria = t.estado.regiones.filter((r) => !t.categoria(r.categoriaId)).length
   const sinTexto = t.doc.paginas.filter((p) => p.texto === 'SinTexto').length
+  const sinFundamento = [...new Set(t.estado.regiones.map((r) => r.categoriaId ?? 'otro'))]
+    .map((id) => t.categoria(id))
+    .filter((c) => c && fundamentoPendiente(c, t.inicio.catalogo))
+    .map((c) => c!.nombre)
 
   const continuar = async () => {
     setError(null)
@@ -136,6 +142,14 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
                 Permitir buscar y copiar el texto no testado (OCR sobre la versión ya testada)
               </label>
             </fieldset>
+            {sinFundamento.length > 0 && (
+              <div className="tarjeta aviso">
+                <p>
+                  La leyenda saldrá con el fundamento pendiente en: {sinFundamento.join(', ')}.
+                </p>
+                <button onClick={alEditarCatalogo}>Capturar fundamentos</button>
+              </div>
+            )}
             {sinTexto > 0 && (
               <p className="nota">
                 Hay {sinTexto} página(s) escaneadas cuyo texto no se ha revisado con búsqueda ni detectores.

@@ -99,8 +99,10 @@ public sealed class Puente : IDisposable
         "cancelar" => Accion(() => _cancelacion?.Cancel()),
         "abrirArchivo" => Accion(() => AbrirConSistema(Requerido(a, "ruta"), carpeta: false)),
         "mostrarEnCarpeta" => Accion(() => AbrirConSistema(Requerido(a, "ruta"), carpeta: true)),
-        "editarCatalogo" => Accion(() => AbrirConSistema(_rutaCatalogo, carpeta: false)),
-        "recargarCatalogo" => Sincrono(() => _catalogo = CargarCatalogo()),
+        "guardarCatalogo" => Sincrono(() => GuardarCatalogo(Leer<CatalogoDatos>(a, "catalogo"))),
+        "restaurarCatalogo" => Sincrono(() => GuardarCatalogo(CatalogoDatos.PorDefecto())),
+        "importarCatalogo" => Sincrono(ImportarCatalogo),
+        "exportarCatalogo" => Sincrono(() => ExportarCatalogo(Leer<CatalogoDatos>(a, "catalogo"))),
         "guardarPreferencias" => Sincrono(() => GuardarPreferencias(a)),
         _ => throw new NotSupportedException($"Método desconocido: {metodo}"),
     };
@@ -262,6 +264,44 @@ public sealed class Puente : IDisposable
             Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{ruta}\"") { UseShellExecute = true });
         else
             Process.Start(new ProcessStartInfo(ruta) { UseShellExecute = true });
+    }
+
+    private CatalogoDatos GuardarCatalogo(CatalogoDatos catalogo)
+    {
+        var limpio = catalogo.Normalizar();
+        var errores = limpio.Validar();
+        if (errores.Count > 0) throw new ArgumentException(string.Join(" ", errores));
+        limpio.Guardar(_rutaCatalogo);
+        _catalogo = limpio;
+        return limpio;
+    }
+
+    /// <summary>Lee un catálogo de otro archivo (por ejemplo, el que comparte el área) sin guardarlo todavía.</summary>
+    private CatalogoDatos? ImportarCatalogo()
+    {
+        var dialogo = new OpenFileDialog
+        {
+            Title = "Importar catálogo",
+            Filter = "Catálogo de Testado (*.json)|*.json",
+        };
+        return dialogo.ShowDialog(_ventana) == true ? CatalogoDatos.Leer(dialogo.FileName) : null;
+    }
+
+    private string? ExportarCatalogo(CatalogoDatos catalogo)
+    {
+        var limpio = catalogo.Normalizar();
+        var errores = limpio.Validar();
+        if (errores.Count > 0) throw new ArgumentException(string.Join(" ", errores));
+        var dialogo = new SaveFileDialog
+        {
+            Title = "Exportar catálogo",
+            Filter = "Catálogo de Testado (*.json)|*.json",
+            FileName = "catalogo-testado.json",
+            OverwritePrompt = true,
+        };
+        if (dialogo.ShowDialog(_ventana) != true) return null;
+        limpio.Guardar(dialogo.FileName);
+        return dialogo.FileName;
     }
 
     private CatalogoDatos CargarCatalogo()

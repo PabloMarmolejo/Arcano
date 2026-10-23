@@ -7,6 +7,7 @@ import type { DocumentoPdf } from './pdf'
 import { alProgreso, enEscritorio, ErrorPuente, llamar } from './puente'
 import type { Coincidencia, DatosLeyenda, DocumentoAbierto, InfoPagina, Inicio, Palabra, Progreso, RectN } from './tipos'
 import { SelectorCategoria } from './componentes/Comunes'
+import { DialogoCatalogo } from './componentes/DialogoCatalogo'
 import { DialogoGenerar } from './componentes/DialogoGenerar'
 import { Miniaturas } from './componentes/Miniaturas'
 import { PanelBuscar } from './componentes/PanelBuscar'
@@ -44,6 +45,7 @@ export function App() {
   const [terminos, setTerminos] = useState<string[]>([])
   const [leyenda, setLeyenda] = useState<DatosLeyenda>(leyendaVacia)
   const [generando, setGenerando] = useState(false)
+  const [editandoCatalogo, setEditandoCatalogo] = useState(false)
   const [tarea, setTarea] = useState<Progreso | null>(null)
   const [avisos, setAvisos] = useState<Aviso[]>([])
   const [confirmacion, setConfirmacion] = useState<{ texto: string; si: string; no: string; resolver: (r: boolean) => void } | null>(null)
@@ -244,6 +246,8 @@ export function App() {
   if (!inicio) return <div className="pantalla-centro">Cargando…</div>
 
   const seleccionada = estado.regiones.find((r) => r.id === estado.seleccion)
+  const enUso = new Map<string, number>()
+  for (const r of estado.regiones) if (r.categoriaId) enUso.set(r.categoriaId, (enUso.get(r.categoriaId) ?? 0) + 1)
 
   const cuerpo = (
     <div className="app">
@@ -251,6 +255,9 @@ export function App() {
         <div className="marca">Testado</div>
         <button onClick={() => abrir()} title="Abrir PDF o Word (Ctrl+O)">
           Abrir…
+        </button>
+        <button onClick={() => setEditandoCatalogo(true)} title="Categorías, motivación y fundamentos de la leyenda">
+          Catálogo
         </button>
         {contexto && doc && (
           <>
@@ -347,9 +354,23 @@ export function App() {
               alCerrar={() => setGenerando(false)}
               alGuardarProyecto={guardarProyecto}
               alRevisar={() => setPestana('revision')}
+              alEditarCatalogo={() => {
+                setGenerando(false)
+                setEditandoCatalogo(true)
+              }}
             />
           )}
         </>
+      )}
+
+      {editandoCatalogo && (
+        <DialogoCatalogo
+          catalogo={inicio.catalogo}
+          enUso={enUso}
+          alGuardar={(catalogo) => setInicio({ ...inicio, catalogo })}
+          alCerrar={() => setEditandoCatalogo(false)}
+          avisar={avisar}
+        />
       )}
 
       {tarea && (

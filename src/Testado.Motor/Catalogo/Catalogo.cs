@@ -54,8 +54,65 @@ public sealed record CatalogoDatos
         if (File.Exists(ruta))
             return JsonSerializer.Deserialize<CatalogoDatos>(File.ReadAllText(ruta), Json) ?? PorDefecto();
         var porDefecto = PorDefecto();
-        Directory.CreateDirectory(Path.GetDirectoryName(ruta)!);
-        File.WriteAllText(ruta, JsonSerializer.Serialize(porDefecto, Json));
+        porDefecto.Guardar(ruta);
         return porDefecto;
+    }
+
+    /// <summary>Lee un catálogo de un archivo (por ejemplo, uno compartido por otra persona) y lo valida.</summary>
+    public static CatalogoDatos Leer(string ruta)
+    {
+        CatalogoDatos? catalogo;
+        try { catalogo = JsonSerializer.Deserialize<CatalogoDatos>(File.ReadAllText(ruta), Json); }
+        catch (JsonException ex) { throw new ArgumentException($"El archivo no es un catálogo válido: {ex.Message}", ex); }
+        if (catalogo is null || catalogo.Categorias.Count == 0)
+            throw new ArgumentException("El archivo no contiene categorías.");
+        var limpio = catalogo.Normalizar();
+        var errores = limpio.Validar();
+        if (errores.Count > 0) throw new ArgumentException(string.Join(" ", errores));
+        return limpio;
+    }
+
+    /// <summary>Quita espacios sobrantes y deja los dominios en minúsculas, sin «@» ni repetidos.</summary>
+    public CatalogoDatos Normalizar() => this with
+    {
+        FundamentoGeneral = FundamentoGeneral.Trim(),
+        DominiosInstitucionales = DominiosInstitucionales
+            .Select(d => d.Trim().TrimStart('@').ToLowerInvariant())
+            .Where(d => d.Length > 0)
+            .Distinct()
+            .ToList(),
+        Categorias = Categorias.Select(c => c with
+        {
+            Id = c.Id.Trim(),
+            Nombre = c.Nombre.Trim(),
+            Grupo = string.IsNullOrWhiteSpace(c.Grupo) ? "Otros" : c.Grupo.Trim(),
+            Tipo = c.Tipo == "reservada" ? "reservada" : "confidencial",
+            Motivacion = c.Motivacion.Trim(),
+            Fundamento = c.Fundamento.Trim(),
+        }).ToList(),
+    };
+
+    /// <summary>Errores que impiden guardar el catálogo (vacío si es válido).</summary>
+    public IReadOnlyList<string> Validar()
+    {
+        var errores = new List<string>();
+        if (Categorias.Count == 0) errores.Add("El catálogo debe tener al menos una categoría.");
+        foreach (var c in Categorias.Where(c => string.IsNullOrWhiteSpace(c.Id) || string.IsNullOrWhiteSpace(c.Nombre)))
+            errores.Add($"Hay una categoría sin {(string.IsNullOrWhiteSpace(c.Nombre) ? "nombre" : "clave")}.");
+        foreach (var repetida in Categorias.GroupBy(c => c.Id).Where(g => g.Count() > 1 && g.Key.Length > 0))
+            errores.Add($"La clave «{repetida.Key}» está repetida.");
+        foreach (var repetido in Categorias.GroupBy(c => c.Nombre.Trim(), StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1 && g.Key.Length > 0))
+            errores.Add($"Hay dos categorías llamadas «{repetido.Key}».");
+        foreach (var d in DominiosInstitucionales.Where(d => !d.Contains('.') || d.Contains(' ')))
+            errores.Add($"«{d}» no parece un dominio de correo (ejemplo: tribunal.gob.mx).");
+        return errores;
+    }
+
+    public void Guardar(string ruta)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(ruta))!);
+        var temporal = ruta + ".tmp";
+        File.WriteAllText(temporal, JsonSerializer.Serialize(this, Json));
+        File.Move(temporal, ruta, overwrite: true);
     }
 }

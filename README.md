@@ -99,11 +99,13 @@ documentos).
 
 ## Pendientes antes de producción
 
-- **Fundamentos legales.** `catalogo.json` trae las categorías con motivación,
-  pero el fundamento está como `[PENDIENTE…]`. Cada institución debe llenarlo
-  con la normativa que le aplica (se edita en `%LOCALAPPDATA%\Testado\catalogo.json`).
-  En el mismo archivo, `dominiosInstitucionales` lista los dominios de correo
-  que no se proponen para testar (por defecto, `gob.mx`).
+- **Fundamentos legales.** El catálogo trae las categorías con motivación,
+  pero el fundamento está como `[PENDIENTE…]`. Cada institución lo captura en
+  la pantalla **Catálogo** (botón en la barra superior): un fundamento general
+  y, si hace falta, uno propio por categoría. Ahí también se configuran los
+  dominios de correo institucionales y se puede **exportar** el catálogo para
+  que otras personas lo **importen**. Se guarda en
+  `%LOCALAPPDATA%\Testado\catalogo.json`.
 - Instalador (MSIX o Inno Setup) y asociación con «Abrir con…».
 - Integración con sistemas de expedientes: endpoint que reciba el documento y
   las zonas, y precargar como términos de búsqueda las partes del expediente.

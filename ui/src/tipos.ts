@@ -63,6 +63,7 @@ export interface Catalogo {
   version: number
   nota: string
   fundamentoGeneral: string
+  dominiosInstitucionales: string[]
   categorias: Categoria[]
 }
 

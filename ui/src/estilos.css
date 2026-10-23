@@ -798,3 +798,84 @@ legend {
 .aviso-flotante.error {
   background: var(--alerta);
 }
+
+/* Catálogo */
+.modal.ancha {
+  width: min(880px, 100%);
+}
+.modal footer .relleno {
+  flex: 1;
+}
+.ayuda {
+  color: var(--texto-3);
+}
+.campo.crece {
+  flex: 1;
+}
+fieldset textarea,
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+}
+.fila-controles input[type='search'] {
+  flex: 1;
+  min-width: 0;
+}
+button.peligro {
+  border-color: #e3b2a5;
+  color: var(--alerta);
+}
+button.peligro:hover:not(:disabled) {
+  background: var(--alerta-suave);
+  border-color: var(--alerta);
+}
+.categorias {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.categorias > li {
+  border-bottom: 1px solid var(--borde);
+}
+.categorias > li:last-child {
+  border-bottom: none;
+}
+.categorias > li.abierta {
+  background: var(--superficie-2);
+}
+.fila-categoria {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px !important;
+}
+.fila-categoria:hover {
+  background: var(--superficie-2) !important;
+}
+.nombre-categoria {
+  flex: 1;
+  font-weight: 500;
+}
+.etiqueta-suave.propio {
+  background: var(--exito-suave);
+  color: var(--exito);
+  border-color: transparent;
+}
+.chevron {
+  color: var(--texto-3);
+  width: 12px;
+}
+.editor-categoria {
+  padding: 4px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.editor-categoria .fila-campos {
+  gap: 10px;
+}
