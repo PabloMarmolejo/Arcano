@@ -1,0 +1,25 @@
+{
+  "name": "testado-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "copiar-pdfjs": "node scripts/copiar-pdfjs.mjs",
+    "dev": "npm run copiar-pdfjs && vite",
+    "build": "npm run copiar-pdfjs && tsc -b && vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^5.7.284",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^4.1.10"
+  }
+}

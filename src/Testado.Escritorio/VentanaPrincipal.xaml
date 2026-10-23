@@ -1,0 +1,14 @@
+<Window x:Class="Testado.Escritorio.VentanaPrincipal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Testado · Generador de versiones públicas"
+        Width="1400" Height="900" MinWidth="960" MinHeight="600"
+        WindowState="Maximized" Background="#F5F4F0"
+        Closing="AlCerrar">
+    <Grid>
+        <wv2:WebView2 x:Name="Vista" />
+        <TextBlock x:Name="Cargando" Text="Cargando…" FontSize="16" Foreground="#5A5A55"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+</Window>

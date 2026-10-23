@@ -1,0 +1,28 @@
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+
+# Interfaz
+ui/node_modules/
+ui/dist/
+ui/public/pdfjs/
+
+# Datos de OCR (se descargan al compilar)
+recursos/tessdata/
+
+# Salidas de pruebas manuales: en muestras/ solo se versionan los ejemplos
+muestras/*
+!muestras/ejemplo.pdf
+!muestras/ejemplo-word.docx
+
+# Paquetes publicados
+publicar/
+
+# Trabajo y resultados generados sobre las muestras
+*.testado
+* - versión pública.pdf
+
+# Compilación incremental de TypeScript
+*.tsbuildinfo
