@@ -1,5 +1,6 @@
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using PdfSharp.Pdf.Annotations;
 using SkiaSharp;
 using Arcano.Motor.Generacion;
 
@@ -48,6 +49,12 @@ internal static class Muestras
             gfx.DrawString("Notifíquese personalmente a Juan Pérez López en su domicilio.",
                 new XFont("Arcano", 12), XBrushes.Black, 60, 120, XStringFormats.BaseLineLeft);
         }
+        // Comentario oculto: no debe llegar a la versión pública aunque la página se copie.
+        p2.Annotations.Add(new PdfTextAnnotation
+        {
+            Contents = "Nota interna: el actor vive en otra ciudad.",
+            Rectangle = new PdfRectangle(new XRect(500, 700, 20, 20)),
+        });
 
         // Página 3: escaneada (solo imagen).
         var p3 = pdf.AddPage();
@@ -76,6 +83,31 @@ internal static class Muestras
         lienzo.Flush();
         using var datos = bmp.Encode(SKEncodedImageFormat.Png, 100);
         return datos.ToArray();
+    }
+
+    /// <summary>Documento solo de texto, de varias páginas; el nombre aparece en la primera.</summary>
+    public static byte[] DocumentoDeTexto(int paginas)
+    {
+        ResolutorFuentes.Instalar();
+        using var pdf = new PdfDocument();
+        var fuente = new XFont("Arcano", 11);
+        for (var n = 0; n < paginas; n++)
+        {
+            var pagina = pdf.AddPage();
+            pagina.Width = XUnit.FromPoint(612);
+            pagina.Height = XUnit.FromPoint(792);
+            using var gfx = XGraphics.FromPdfPage(pagina);
+            for (var r = 0; r < 40; r++)
+            {
+                var texto = n == 0 && r == 0
+                    ? $"Expediente promovido por {Nombre} ante este Tribunal."
+                    : $"Página {n + 1}, renglón {r + 1}: considerandos y resolutivos de la sentencia de ejemplo.";
+                gfx.DrawString(texto, fuente, XBrushes.Black, 60, 80 + r * 16, XStringFormats.BaseLineLeft);
+            }
+        }
+        using var salida = new MemoryStream();
+        pdf.Save(salida);
+        return salida.ToArray();
     }
 
     public static string CarpetaTemporal()

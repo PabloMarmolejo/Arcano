@@ -157,6 +157,60 @@ public class MotorPruebas(OcrCompartido compartido) : IClassFixture<OcrCompartid
         Assert.Contains(resultado.Verificacion.Hallazgos, h => h.Tipo == "texto" && h.Pagina == 1);
     }
 
+    [Fact]
+    public void Las_paginas_sin_testados_se_copian_sin_anotaciones()
+    {
+        using var sesion = Abrir();
+        var curp = sesion.Detectar(["curp"]).Single();
+        var regiones = new List<Region>
+        {
+            new() { Id = "r1", Pagina = 0, Caja = curp.Cajas[0], CategoriaId = "curp", Texto = curp.Texto },
+        };
+        var carpeta = Muestras.CarpetaTemporal();
+        var generador = new GeneradorVersionPublica(_ocr);
+        var opciones = new OpcionesGeneracion { Dpi = 200, IncluirLeyenda = false };
+
+        var mixta = generador.Generar(sesion, regiones, CatalogoDatos.PorDefecto(), opciones, Path.Combine(carpeta, "mixta.pdf"));
+        var todas = generador.Generar(sesion, regiones, CatalogoDatos.PorDefecto(),
+            opciones with { RasterizarTodas = true }, Path.Combine(carpeta, "todas.pdf"));
+
+        Assert.Equal(1, mixta.PaginasConvertidas);
+        Assert.Equal(3, todas.PaginasConvertidas);
+
+        using var generado = DocumentoPdf.Abrir(mixta.Ruta);
+        Assert.Equal(3, generado.Paginas);
+        // La página 2 (rotada) se copió: conserva su texto propio, su giro y nada de la anotación.
+        Assert.Equal(OrigenTexto.Nativo, generado.ExtraerTexto(1).Origen);
+        Assert.Contains("notifiquese personalmente", generado.ExtraerTexto(1).Normalizado);
+        Assert.True(generado.TamanoPagina(1).AnchoPt > generado.TamanoPagina(1).AltoPt);
+        Assert.Equal(0, generado.ContarAnotaciones(1));
+        Assert.Equal("", generado.Metadato("Author"));
+        // La CURP no aparece en ningún lado.
+        Assert.DoesNotContain("pelj800101hdfrpn09", string.Concat(Enumerable.Range(0, 3).Select(p => generado.ExtraerTexto(p).Normalizado)));
+        Assert.True(mixta.Verificacion.Correcta, string.Join("\n", mixta.Verificacion.Hallazgos.Select(h => h.Descripcion)));
+    }
+
+    [Fact]
+    public void En_un_documento_de_texto_copiar_las_paginas_sin_testados_reduce_mucho_el_tamano()
+    {
+        using var sesion = SesionDocumento.DesdeBytes("largo.pdf", Muestras.DocumentoDeTexto(20), _ocr);
+        var nombre = sesion.Buscar(Muestras.Nombre, true, "nombre").First();
+        var regiones = new List<Region>
+        {
+            new() { Id = "r1", Pagina = nombre.Pagina, Caja = nombre.Cajas[0], CategoriaId = "nombre", Texto = nombre.Texto },
+        };
+        var carpeta = Muestras.CarpetaTemporal();
+        var generador = new GeneradorVersionPublica(_ocr);
+        var opciones = new OpcionesGeneracion { Dpi = 300, IncluirLeyenda = false, CapaTexto = false };
+
+        var mixta = generador.Generar(sesion, regiones, CatalogoDatos.PorDefecto(), opciones, Path.Combine(carpeta, "mixta.pdf"));
+        var todas = generador.Generar(sesion, regiones, CatalogoDatos.PorDefecto(),
+            opciones with { RasterizarTodas = true }, Path.Combine(carpeta, "todas.pdf"));
+
+        Assert.Equal(1, mixta.PaginasConvertidas);
+        Assert.True(mixta.Bytes * 5 < todas.Bytes, $"mixta {mixta.Bytes} B, todas {todas.Bytes} B");
+    }
+
     [Theory]
     [InlineData(new[] { 1, 2, 3, 5, 7, 8 }, "1 a 3, 5, 7 y 8")]
     [InlineData(new[] { 4 }, "4")]

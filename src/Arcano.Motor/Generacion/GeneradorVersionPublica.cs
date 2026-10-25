@@ -8,10 +8,15 @@ using Arcano.Motor.Ocr;
 namespace Arcano.Motor.Generacion;
 
 /// <summary>
-/// Genera la versión pública. Cada página se convierte en imagen, se pintan los
-/// testados sobre los píxeles y solo después se reconoce el texto para la capa
-/// de búsqueda: lo testado ya no existe en el archivo de salida, ni como texto
-/// ni como imagen, y no hay forma de recuperarlo.
+/// Genera la versión pública. Cada página con testados se convierte en imagen,
+/// se pintan los testados sobre los píxeles y solo después se reconoce el texto
+/// para la capa de búsqueda: lo testado ya no existe en el archivo de salida, ni
+/// como texto ni como imagen, y no hay forma de recuperarlo.
+///
+/// Las páginas sin testados se copian del original (texto y vectores, mucho más
+/// ligeras) sin anotaciones, acciones ni metadatos; del documento original no se
+/// lleva nada más (adjuntos, JavaScript, marcadores, formularios). Con
+/// <see cref="OpcionesGeneracion.RasterizarTodas"/> se convierten todas.
 /// </summary>
 public sealed class GeneradorVersionPublica(IReconocedorTexto? ocr)
 {
@@ -39,11 +44,24 @@ public sealed class GeneradorVersionPublica(IReconocedorTexto? ocr)
         pdf.Info.Keywords = "";
         pdf.Info.Creator = "Arcano";
 
+        var avisos = new List<string>();
+        var conTestados = regiones.Select(r => r.Pagina).ToHashSet();
+        using var original = opciones.RasterizarTodas ? null : AbrirParaCopiar(sesion.Pdf, avisos);
+        var convertidas = 0;
+
         for (var p = 0; p < totalPaginas; p++)
         {
             ct.ThrowIfCancellationRequested();
-            progreso?.Report(new Progreso("pagina", p, totalPaginas, $"Página {p + 1} de {totalPaginas}"));
 
+            if (original is not null && !conTestados.Contains(p))
+            {
+                progreso?.Report(new Progreso("pagina", p, totalPaginas, $"Página {p + 1} de {totalPaginas} (sin testados, se copia)"));
+                CopiarPagina(pdf, original.Pages[p]);
+                continue;
+            }
+
+            progreso?.Report(new Progreso("pagina", p, totalPaginas, $"Página {p + 1} de {totalPaginas}"));
+            convertidas++;
             using var imagen = sesion.Documento.Renderizar(p, dpi);
             Pintar(imagen, regiones.Where(r => r.Pagina == p), numeros, color, dpi, opciones.Numerar);
 
@@ -67,15 +85,48 @@ public sealed class GeneradorVersionPublica(IReconocedorTexto? ocr)
             var paginas = pdf.PageCount;
             pdf.Save(temporal);
             progreso?.Report(new Progreso("verificacion", totalPaginas, totalPaginas, "Verificando el archivo"));
-            var verificacion = Verificador.Verificar(temporal, regiones, totalPaginas);
+            var verificacion = Verificador.Verificar(temporal, regiones, totalPaginas, convertidas);
             File.Move(temporal, rutaSalida, overwrite: true);
             return new ResultadoGeneracion(rutaSalida, paginas, numeros.Values.Distinct().Count(),
-                new FileInfo(rutaSalida).Length, verificacion);
+                new FileInfo(rutaSalida).Length, verificacion, convertidas, avisos);
         }
         finally
         {
             if (File.Exists(temporal)) File.Delete(temporal);
         }
+    }
+
+    /// <summary>
+    /// Abre el original para copiar páginas. Si PDFsharp no puede leerlo (cifrado,
+    /// estructura dañada) se devuelve null y todas las páginas se convierten en imagen.
+    /// </summary>
+    private static PdfDocument? AbrirParaCopiar(byte[] contenido, List<string> avisos)
+    {
+        try
+        {
+            return PdfSharp.Pdf.IO.PdfReader.Open(new MemoryStream(contenido, writable: false), PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        }
+        catch (Exception ex) when (ex is PdfSharp.Pdf.IO.PdfReaderException or InvalidOperationException or NotImplementedException or NotSupportedException or IOException)
+        {
+            avisos.Add("No se pudieron copiar las páginas del original (el PDF está protegido o tiene una estructura que no se puede leer); todas se convirtieron en imagen.");
+            return null;
+        }
+    }
+
+    /// <summary>Elementos de página que no se conservan al copiarla: pueden llevar datos que no se ven.</summary>
+    private static readonly string[] ElementosQueSeQuitan =
+        ["/Annots", "/AA", "/Metadata", "/PieceInfo", "/Thumb", "/B", "/StructParents", "/Tabs"];
+
+    /// <summary>
+    /// Copia una página sin testados. Se quitan anotaciones (comentarios, campos de
+    /// formulario, enlaces), acciones, metadatos XMP, datos privados de la aplicación
+    /// que la creó y miniaturas.
+    /// </summary>
+    private static void CopiarPagina(PdfDocument destino, PdfPage origen)
+    {
+        var pagina = destino.AddPage(origen);
+        foreach (var clave in ElementosQueSeQuitan)
+            pagina.Elements.Remove(clave);
     }
 
     /// <summary>

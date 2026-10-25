@@ -18,6 +18,11 @@ public sealed record OpcionesGeneracion
     public string Color { get; init; } = "#000000";
     /// <summary>Escribe el número de cada testado dentro de su recuadro.</summary>
     public bool Numerar { get; init; } = true;
+    /// <summary>
+    /// Convierte en imagen también las páginas sin testados. Por defecto solo se
+    /// convierten las que tienen testados y las demás se copian del original.
+    /// </summary>
+    public bool RasterizarTodas { get; init; }
     /// <summary>Agrega una capa de texto invisible (OCR) para que el PDF se pueda buscar.</summary>
     public bool CapaTexto { get; init; } = true;
     public bool IncluirLeyenda { get; init; } = true;
@@ -28,4 +33,6 @@ public sealed record Hallazgo(string Tipo, string Descripcion, int? Pagina = nul
 
 public sealed record Verificacion(bool Correcta, IReadOnlyList<string> Comprobaciones, IReadOnlyList<Hallazgo> Hallazgos);
 
-public sealed record ResultadoGeneracion(string Ruta, int Paginas, int Testados, long Bytes, Verificacion Verificacion);
+public sealed record ResultadoGeneracion(
+    string Ruta, int Paginas, int Testados, long Bytes, Verificacion Verificacion,
+    int PaginasConvertidas, IReadOnlyList<string> Avisos);

@@ -86,6 +86,8 @@ export interface OpcionesGeneracion {
   color: string
   numerar: boolean
   capaTexto: boolean
+  /** Convierte en imagen también las páginas sin testados. */
+  rasterizarTodas: boolean
   incluirLeyenda: boolean
   leyenda: DatosLeyenda
 }
@@ -144,6 +146,8 @@ export interface ResultadoGeneracion {
   paginas: number
   testados: number
   bytes: number
+  paginasConvertidas: number
+  avisos: string[]
   verificacion: {
     correcta: boolean
     comprobaciones: string[]

@@ -132,6 +132,10 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
                 <input type="checkbox" checked={opciones.numerar} onChange={(e) => fijar('numerar', e.target.checked)} />
                 Numerar cada testado (el número remite a la leyenda)
               </label>
+              <label className="opcion" title="Las páginas sin testados se copian del original sin comentarios ni metadatos. Marque esta opción si el original puede traer contenido oculto (capas, texto blanco).">
+                <input type="checkbox" checked={opciones.rasterizarTodas ?? false} onChange={(e) => fijar('rasterizarTodas', e.target.checked)} />
+                Convertir en imagen también las páginas sin testados (archivo más pesado y lento)
+              </label>
               <label className="opcion">
                 <input
                   type="checkbox"
@@ -139,7 +143,7 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
                   disabled={!t.inicio.ocrDisponible}
                   onChange={(e) => fijar('capaTexto', e.target.checked)}
                 />
-                Permitir buscar y copiar el texto no testado (OCR sobre la versión ya testada)
+                Permitir buscar y copiar el texto de las páginas convertidas (OCR sobre la versión ya testada)
               </label>
             </fieldset>
             {sinFundamento.length > 0 && (
@@ -187,8 +191,16 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
             </p>
             <p className="ruta">{resultado.ruta}</p>
             <p>
-              {resultado.paginas} página(s) · {resultado.testados} testado(s) · {(resultado.bytes / 1024 / 1024).toFixed(1)} MB
+              {resultado.paginas} página(s) · {resultado.testados} testado(s) · {(resultado.bytes / 1024 / 1024).toFixed(1)} MB ·{' '}
+              {resultado.paginasConvertidas} página(s) convertida(s) en imagen
             </p>
+            {resultado.avisos.length > 0 && (
+              <ul className="hallazgos">
+                {resultado.avisos.map((a) => (
+                  <li key={a}>{a}</li>
+                ))}
+              </ul>
+            )}
             {resultado.verificacion.hallazgos.length > 0 && (
               <ul className="hallazgos">
                 {resultado.verificacion.hallazgos.map((h, i) => (

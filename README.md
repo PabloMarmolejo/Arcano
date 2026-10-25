@@ -41,10 +41,13 @@ usarlo, capture los fundamentos legales de su institución en **Catálogo**.
      poder buscar y detectar en ellas.
 3. **Revisar.** Avisa cuando algo ya testado vuelve a aparecer sin testar en
    otra página, y cuando hay zonas sin categoría.
-4. **Generar.** Cada página se dibuja como imagen, se pintan los testados
-   sobre los píxeles y **después** se aplica OCR para agregar una capa de texto
-   invisible (el PDF se puede buscar, pero lo testado ya no estaba en la
-   imagen). Al final se agrega la hoja de leyenda: documento, testados
+4. **Generar.** Cada página con testados se dibuja como imagen, se pintan los
+   testados sobre los píxeles y **después** se aplica OCR para agregar una capa
+   de texto invisible (el PDF se puede buscar, pero lo testado ya no estaba en
+   la imagen). Las páginas sin testados se copian del original, sin
+   anotaciones, acciones ni metadatos, lo que mantiene el archivo ligero; del
+   documento original no se lleva nada más (adjuntos, JavaScript, marcadores,
+   formularios). Una opción permite convertir todas las páginas en imagen. Al final se agrega la hoja de leyenda: documento, testados
    por categoría con páginas, motivación y fundamento.
 5. **Verificar.** Antes de entregar el archivo se comprueba que no tenga
    anotaciones, adjuntos ni metadatos del original, y que ningún texto testado

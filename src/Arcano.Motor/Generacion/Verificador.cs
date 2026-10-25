@@ -12,7 +12,7 @@ namespace Arcano.Motor.Generacion;
 /// </summary>
 public static class Verificador
 {
-    public static Verificacion Verificar(string ruta, IReadOnlyList<Region> regiones, int paginasOriginales)
+    public static Verificacion Verificar(string ruta, IReadOnlyList<Region> regiones, int paginasOriginales, int paginasConvertidas)
     {
         var comprobaciones = new List<string>();
         var hallazgos = new List<Hallazgo>();
@@ -68,7 +68,13 @@ public static class Verificador
                 ? "No hay texto testado que comparar (zonas sin texto o solo imágenes)."
                 : $"Ninguno de los {terminos.Count} texto(s) testado(s) aparece en el archivo generado.");
 
-        comprobaciones.Add("Cada página es una imagen nueva: lo testado no existe debajo del recuadro.");
+        var copiadas = paginasOriginales - paginasConvertidas;
+        comprobaciones.Add(copiadas <= 0
+            ? "Cada página es una imagen nueva: lo testado no existe debajo del recuadro."
+            : $"Las páginas con testados ({paginasConvertidas}) son imágenes nuevas: lo testado no existe debajo del recuadro. " +
+              (copiadas == 1
+                  ? "La otra página se copió del original sin anotaciones ni metadatos."
+                  : $"Las otras {copiadas} se copiaron del original sin anotaciones ni metadatos."));
         return new Verificacion(hallazgos.Count == 0, comprobaciones, hallazgos);
     }
 }
