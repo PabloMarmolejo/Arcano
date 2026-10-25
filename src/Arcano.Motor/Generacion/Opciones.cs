@@ -29,7 +29,8 @@ public sealed record OpcionesGeneracion
     public DatosLeyenda Leyenda { get; init; } = new();
 }
 
-public sealed record Hallazgo(string Tipo, string Descripcion, int? Pagina = null);
+/// <summary>Punto a revisar en el archivo generado. <see cref="Texto"/> es el término que se pudo leer, si aplica.</summary>
+public sealed record Hallazgo(string Tipo, string Descripcion, int? Pagina = null, string? Texto = null);
 
 public sealed record Verificacion(bool Correcta, IReadOnlyList<string> Comprobaciones, IReadOnlyList<Hallazgo> Hallazgos);
 

@@ -155,6 +155,10 @@ public class MotorPruebas(OcrCompartido compartido) : IClassFixture<OcrCompartid
 
         Assert.False(resultado.Verificacion.Correcta);
         Assert.Contains(resultado.Verificacion.Hallazgos, h => h.Tipo == "texto" && h.Pagina == 1);
+        // La página 3 es un escaneo sin testados: se copia sin capa de texto, pero se revisa con OCR.
+        var enEscaneo = Assert.Single(resultado.Verificacion.Hallazgos, h => h.Tipo == "texto" && h.Pagina == 2);
+        Assert.Equal("juan perez lopez", enEscaneo.Texto);
+        Assert.Equal(1, resultado.PaginasConvertidas);
     }
 
     [Fact]

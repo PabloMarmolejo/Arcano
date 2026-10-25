@@ -12,7 +12,12 @@ namespace Arcano.Motor.Generacion;
 /// </summary>
 public static class Verificador
 {
-    public static Verificacion Verificar(string ruta, IReadOnlyList<Region> regiones, int paginasOriginales, int paginasConvertidas)
+    /// <param name="textoDeCopias">
+    /// Texto reconocido por OCR de páginas escaneadas que se copiaron sin convertir:
+    /// en el archivo no tienen capa de texto, así que se revisan con este.
+    /// </param>
+    public static Verificacion Verificar(string ruta, IReadOnlyList<Region> regiones, int paginasOriginales, int paginasConvertidas,
+        IReadOnlyDictionary<int, TextoPagina>? textoDeCopias = null)
     {
         var comprobaciones = new List<string>();
         var hallazgos = new List<Hallazgo>();
@@ -42,7 +47,9 @@ public static class Verificador
         else
             comprobaciones.Add("Sin metadatos del documento original (autor, título, palabras clave).");
 
-        var textos = Enumerable.Range(0, doc.Paginas).Select(doc.ExtraerTexto).ToList();
+        var textos = Enumerable.Range(0, doc.Paginas)
+            .Select(p => textoDeCopias is not null && textoDeCopias.TryGetValue(p, out var ocr) ? ocr : doc.ExtraerTexto(p))
+            .ToList();
         var terminos = regiones
             .Select(r => r.Texto)
             .Where(t => !string.IsNullOrWhiteSpace(t))
@@ -60,7 +67,7 @@ public static class Verificador
                 if (!patron.IsMatch(texto.Normalizado)) continue;
                 fugas++;
                 var donde = texto.Pagina < paginasOriginales ? $"página {texto.Pagina + 1}" : "la leyenda";
-                hallazgos.Add(new Hallazgo("texto", $"«{termino}» se puede leer en {donde}.", texto.Pagina));
+                hallazgos.Add(new Hallazgo("texto", $"«{termino}» se puede leer en {donde}.", texto.Pagina, termino));
             }
         }
         if (fugas == 0)

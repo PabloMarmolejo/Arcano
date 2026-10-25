@@ -43,6 +43,7 @@ export function App() {
   const [pestana, setPestana] = useState<Pestana>('testados')
   const [paginaActual, setPaginaActual] = useState(0)
   const [terminos, setTerminos] = useState<string[]>([])
+  const [busquedaPedida, setBusquedaPedida] = useState<{ termino: string; id: number } | null>(null)
   const [leyenda, setLeyenda] = useState<DatosLeyenda>(leyendaVacia)
   const [generando, setGenerando] = useState(false)
   const [editandoCatalogo, setEditandoCatalogo] = useState(false)
@@ -76,7 +77,12 @@ export function App() {
     if (doc) void llamar('marcarCambios', { pendientes: estado.pendientes })
   }, [estado.pendientes, doc])
 
-  useEffect(() => alProgreso((p) => (p.etapa === 'ocr' || p.etapa === 'conversion' ? setTarea(p) : undefined)), [])
+  // Solo se muestra el avance de tareas que abrió esta ventana (abrir, OCR); el
+  // diálogo de generar muestra el suyo.
+  useEffect(
+    () => alProgreso((p) => (p.etapa === 'ocr' || p.etapa === 'conversion' ? setTarea((actual) => (actual ? p : actual)) : undefined)),
+    [],
+  )
 
   const abrir = async (ruta?: string) => {
     if (estado.pendientes && !(await confirmar('Hay cambios sin guardar. ¿Abrir otro documento de todos modos?'))) return
@@ -148,6 +154,20 @@ export function App() {
     } finally {
       setTarea(null)
     }
+  }
+
+  /**
+   * Desde un aviso de la verificación: lleva a la página, reconoce su texto si es
+   * un escaneo y busca el término en todo el documento para testarlo.
+   */
+  const revisarTexto = async (termino: string, pagina: number) => {
+    setGenerando(false)
+    irA(pagina)
+    const escaneadas = (doc?.paginas ?? []).filter((p) => p.texto === 'SinTexto').map((p) => p.indice)
+    if (escaneadas.length > 0 && inicio?.ocrDisponible) await reconocer(escaneadas)
+    setPestana('buscar')
+    setBusquedaPedida({ termino, id: Date.now() })
+    window.setTimeout(() => irA(pagina), 300)
   }
 
   const palabras = useCallback(
@@ -345,7 +365,11 @@ export function App() {
               <div className="panel-cuerpo">
                 {pestana === 'testados' && <PanelTestados />}
                 {pestana === 'buscar' && (
-                  <PanelBuscar terminos={terminos} alAgregarTermino={(x) => setTerminos((ts) => (ts.includes(x) ? ts : [...ts, x]))} />
+                  <PanelBuscar
+                    terminos={terminos}
+                    pedida={busquedaPedida}
+                    alAgregarTermino={(x) => setTerminos((ts) => (ts.includes(x) ? ts : [...ts, x]))}
+                  />
                 )}
                 {pestana === 'detectar' && <PanelDetectar />}
                 {pestana === 'revision' && <PanelRevision alReconocer={reconocer} />}
@@ -359,6 +383,12 @@ export function App() {
               alCerrar={() => setGenerando(false)}
               alGuardarProyecto={guardarProyecto}
               alRevisar={() => setPestana('revision')}
+              alReconocer={reconocer}
+              alIrA={(pagina, caja) => {
+                setGenerando(false)
+                irA(pagina, caja)
+              }}
+              alRevisarTexto={revisarTexto}
               alEditarCatalogo={() => {
                 setGenerando(false)
                 setEditandoCatalogo(true)

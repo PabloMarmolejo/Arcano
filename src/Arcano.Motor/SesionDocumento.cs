@@ -88,7 +88,8 @@ public sealed class SesionDocumento : IDisposable
     public void Reconocer(IEnumerable<int> paginas, IProgress<Progreso>? progreso = null, CancellationToken ct = default)
     {
         if (_ocr is null) throw new InvalidOperationException("El OCR no está disponible.");
-        var lista = paginas.Distinct().Order().ToList();
+        // Las páginas que ya se reconocieron (por ejemplo, al verificar) no se repiten.
+        var lista = paginas.Distinct().Where(p => Texto(p).Origen != OrigenTexto.Ocr).Order().ToList();
         for (var i = 0; i < lista.Count; i++)
         {
             ct.ThrowIfCancellationRequested();

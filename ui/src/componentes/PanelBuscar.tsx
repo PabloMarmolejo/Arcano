@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useArcano } from '../contexto'
 import { ErrorPuente, llamar } from '../puente'
@@ -8,10 +8,12 @@ import { ListaCoincidencias, SelectorCategoria } from './Comunes'
 interface Props {
   terminos: string[]
   alAgregarTermino: (t: string) => void
+  /** Búsqueda pedida desde fuera del panel (por ejemplo, un aviso de la verificación). */
+  pedida?: { termino: string; id: number } | null
 }
 
 /** Busca un nombre o frase en todo el documento (sin distinguir acentos ni mayúsculas). */
-export function PanelBuscar({ terminos, alAgregarTermino }: Props) {
+export function PanelBuscar({ terminos, alAgregarTermino, pedida }: Props) {
   const t = useArcano()
   const [termino, setTermino] = useState('')
   const [palabraCompleta, setPalabraCompleta] = useState(true)
@@ -40,6 +42,13 @@ export function PanelBuscar({ terminos, alAgregarTermino }: Props) {
       setBuscando(false)
     }
   }
+
+  useEffect(() => {
+    if (!pedida) return
+    setTermino(pedida.termino)
+    void buscar(pedida.termino)
+    // Solo cuando llega una petición nueva.
+  }, [pedida?.id])
 
   const alEnviar = (e: FormEvent) => {
     e.preventDefault()

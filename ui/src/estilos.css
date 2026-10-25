@@ -895,3 +895,14 @@ button.peligro:hover:not(:disabled) {
 .editor-categoria .fila-campos {
   gap: 10px;
 }
+
+.hallazgos.enlaces .enlace {
+  color: var(--alerta);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hallazgos.enlaces .ir {
+  font-size: 12px;
+  margin-left: 4px;
+  white-space: nowrap;
+}

@@ -85,7 +85,8 @@ public sealed class GeneradorVersionPublica(IReconocedorTexto? ocr)
             var paginas = pdf.PageCount;
             pdf.Save(temporal);
             progreso?.Report(new Progreso("verificacion", totalPaginas, totalPaginas, "Verificando el archivo"));
-            var verificacion = Verificador.Verificar(temporal, regiones, totalPaginas, convertidas);
+            var textoDeCopias = TextoDeEscaneosCopiados(sesion, conTestados, original is not null, avisos, progreso, ct);
+            var verificacion = Verificador.Verificar(temporal, regiones, totalPaginas, convertidas, textoDeCopias);
             File.Move(temporal, rutaSalida, overwrite: true);
             return new ResultadoGeneracion(rutaSalida, paginas, numeros.Values.Distinct().Count(),
                 new FileInfo(rutaSalida).Length, verificacion, convertidas, avisos);
@@ -94,6 +95,39 @@ public sealed class GeneradorVersionPublica(IReconocedorTexto? ocr)
         {
             if (File.Exists(temporal)) File.Delete(temporal);
         }
+    }
+
+    /// <summary>
+    /// Las páginas escaneadas que se copian no llevan capa de texto: para que la
+    /// verificación también las revise se reconoce su texto (queda en la sesión,
+    /// así que una página ya reconocida no se vuelve a procesar).
+    /// </summary>
+    private Dictionary<int, Texto.TextoPagina>? TextoDeEscaneosCopiados(SesionDocumento sesion, HashSet<int> conTestados,
+        bool huboCopias, List<string> avisos, IProgress<Progreso>? progreso, CancellationToken ct)
+    {
+        if (!huboCopias) return null;
+        var copiadas = Enumerable.Range(0, sesion.Documento.Paginas).Where(p => !conTestados.Contains(p)).ToList();
+        var escaneadas = copiadas.Where(p => sesion.Texto(p).Origen != OrigenTexto.Nativo).ToList();
+        if (escaneadas.Count == 0) return null;
+
+        var pendientes = escaneadas.Where(p => sesion.Texto(p).Origen == OrigenTexto.SinTexto).ToList();
+        if (pendientes.Count > 0)
+        {
+            if (!sesion.HayOcr)
+            {
+                avisos.Add($"{pendientes.Count} página(s) escaneada(s) sin testados no se pudieron revisar porque el OCR no está disponible: " +
+                           string.Join(", ", pendientes.Select(p => p + 1)) + ".");
+                pendientes.Clear();
+            }
+            else
+            {
+                progreso?.Report(new Progreso("verificacion", 0, pendientes.Count, "Revisando el texto de las páginas escaneadas"));
+                sesion.Reconocer(pendientes, progreso, ct);
+            }
+        }
+        return escaneadas
+            .Where(p => sesion.Texto(p).Origen == OrigenTexto.Ocr)
+            .ToDictionary(p => p, sesion.Texto);
     }
 
     /// <summary>

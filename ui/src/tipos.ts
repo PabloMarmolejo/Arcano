@@ -139,6 +139,8 @@ export interface Hallazgo {
   tipo: string
   descripcion: string
   pagina?: number | null
+  /** Término que se pudo leer en el archivo generado. */
+  texto?: string | null
 }
 
 export interface ResultadoGeneracion {

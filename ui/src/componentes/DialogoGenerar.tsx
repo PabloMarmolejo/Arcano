@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { fundamentoPendiente } from '../catalogo'
 import { useArcano } from '../contexto'
 import { alProgreso, ErrorPuente, llamar } from '../puente'
-import type { Coincidencia, DatosLeyenda, OpcionesGeneracion, Progreso, ResultadoGeneracion } from '../tipos'
+import type { Coincidencia, DatosLeyenda, InfoPagina, OpcionesGeneracion, Progreso, RectN, ResultadoGeneracion } from '../tipos'
 
 interface Props {
   leyenda: DatosLeyenda
@@ -11,16 +11,24 @@ interface Props {
   alGuardarProyecto: () => Promise<void>
   alRevisar: () => void
   alEditarCatalogo: () => void
+  /** Reconoce el texto (OCR) de páginas escaneadas; devuelve las páginas actualizadas. */
+  alReconocer: (paginas: number[]) => Promise<InfoPagina[] | null>
+  /** Cierra el diálogo y lleva a una página del documento. */
+  alIrA: (pagina: number, caja?: RectN) => void
+  /** Cierra el diálogo, lleva a la página y busca ahí el término que quedó legible. */
+  alRevisarTexto: (termino: string, pagina: number) => void
 }
 
-type Fase = 'datos' | 'aviso' | 'generando' | 'listo'
+type Fase = 'datos' | 'escaneadas' | 'aviso' | 'generando' | 'listo'
 
 const campos: { clave: keyof DatosLeyenda; etiqueta: string; ayuda?: string; largo?: boolean }[] = [
   { clave: 'documento', etiqueta: 'Documento', ayuda: 'Tipo, número de expediente y fecha. Si se deja vacío se usa el nombre del archivo.' },
   { clave: 'textoAdicional', etiqueta: 'Texto adicional', largo: true },
 ]
 
-export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarProyecto, alRevisar, alEditarCatalogo }: Props) {
+export function DialogoGenerar({
+  leyenda, alCambiarLeyenda, alCerrar, alGuardarProyecto, alRevisar, alEditarCatalogo, alReconocer, alIrA, alRevisarTexto,
+}: Props) {
   const t = useArcano()
   const [opciones, setOpciones] = useState<OpcionesGeneracion>(t.inicio.preferencias.opciones)
   const [fase, setFase] = useState<Fase>('datos')
@@ -34,13 +42,33 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
   const fijar = <K extends keyof OpcionesGeneracion>(k: K, v: OpcionesGeneracion[K]) => setOpciones({ ...opciones, [k]: v })
 
   const sinCategoria = t.estado.regiones.filter((r) => !t.categoria(r.categoriaId)).length
-  const sinTexto = t.doc.paginas.filter((p) => p.texto === 'SinTexto').length
+  const paginasSinTexto = t.doc.paginas.filter((p) => p.texto === 'SinTexto').map((p) => p.indice)
+  const sinTexto = paginasSinTexto.length
   const sinFundamento = [...new Set(t.estado.regiones.map((r) => r.categoriaId ?? 'otro'))]
     .map((id) => t.categoria(id))
     .filter((c) => c && fundamentoPendiente(c, t.inicio.catalogo))
     .map((c) => c!.nombre)
 
+  /**
+   * Antes de buscar repeticiones conviene reconocer las páginas escaneadas: si no,
+   * un nombre testado que aparece en un escaneo solo se descubre al final.
+   */
   const continuar = async () => {
+    setError(null)
+    if (sinTexto > 0 && t.inicio.ocrDisponible) {
+      setFase('escaneadas')
+      return
+    }
+    await revisarRepeticiones()
+  }
+
+  const reconocerYRevisar = async () => {
+    const nuevas = await alReconocer(paginasSinTexto)
+    if (nuevas === null) return
+    await revisarRepeticiones()
+  }
+
+  const revisarRepeticiones = async () => {
     setError(null)
     const repeticiones = await llamar<Coincidencia[]>('repeticiones', { id: t.doc.id, regiones: t.estado.regiones }).catch(() => [])
     if (repeticiones.length > 0 || sinCategoria > 0) {
@@ -162,12 +190,35 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
           </div>
         )}
 
+        {fase === 'escaneadas' && (
+          <div className="modal-cuerpo">
+            <p>
+              {sinTexto} página(s) son escaneos sin texto reconocido: {paginasSinTexto.map((p) => p + 1).join(', ')}.
+            </p>
+            <p>
+              Para avisarle si algo que ya testó aparece también en ellas, primero hay que reconocer su texto (OCR). Si no,
+              esas apariciones solo se descubrirán al verificar el archivo terminado.
+            </p>
+          </div>
+        )}
+
         {fase === 'aviso' && (
           <div className="modal-cuerpo">
             {pendientes.length > 0 && (
-              <p className="alerta">
-                {pendientes.length} aparición(es) de texto ya testado siguen visibles en otras partes del documento.
-              </p>
+              <>
+                <p className="alerta">
+                  {pendientes.length} aparición(es) de texto ya testado siguen visibles en otras partes del documento:
+                </p>
+                <ul className="hallazgos enlaces">
+                  {pendientes.map((c, i) => (
+                    <li key={i}>
+                      <button className="enlace" onClick={() => alIrA(c.pagina, c.cajas[0])}>
+                        «{c.texto}» en la página {c.pagina + 1}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
             {sinCategoria > 0 && <p className="alerta">{sinCategoria} zona(s) no tienen categoría.</p>}
             <p>Puede revisarlas antes de generar o generar de todos modos.</p>
@@ -178,7 +229,7 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
           <div className="modal-cuerpo">
             <p>{progreso?.detalle ?? 'Preparando…'}</p>
             <progress max={Math.max(1, progreso?.total ?? 1)} value={progreso?.actual ?? 0} />
-            <p className="nota">Cada página se convierte en imagen, se testa y se reconoce su texto. Puede tardar unos minutos.</p>
+            <p className="nota">Las páginas con testados se convierten en imagen y se reconoce su texto; las demás se copian. Puede tardar unos minutos.</p>
           </div>
         )}
 
@@ -202,11 +253,25 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
               </ul>
             )}
             {resultado.verificacion.hallazgos.length > 0 && (
-              <ul className="hallazgos">
-                {resultado.verificacion.hallazgos.map((h, i) => (
-                  <li key={i}>{h.descripcion}</li>
-                ))}
-              </ul>
+              <>
+                <ul className="hallazgos enlaces">
+                  {resultado.verificacion.hallazgos.map((h, i) => {
+                    const enDocumento = h.pagina != null && h.pagina < t.doc.paginas.length
+                    return (
+                      <li key={i}>
+                        {enDocumento && h.texto ? (
+                          <button className="enlace" onClick={() => alRevisarTexto(h.texto!, h.pagina!)} title="Ir a la página y buscar el texto">
+                            {h.descripcion} <span className="ir">Ir a la página →</span>
+                          </button>
+                        ) : (
+                          h.descripcion
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+                <p className="nota">Teste esas apariciones y vuelva a generar la versión pública.</p>
+              </>
             )}
             <ul className="comprobaciones">
               {resultado.verificacion.comprobaciones.map((c) => (
@@ -222,6 +287,14 @@ export function DialogoGenerar({ leyenda, alCambiarLeyenda, alCerrar, alGuardarP
               <button onClick={alCerrar}>Cancelar</button>
               <button className="primario" onClick={continuar}>
                 Generar…
+              </button>
+            </>
+          )}
+          {fase === 'escaneadas' && (
+            <>
+              <button onClick={revisarRepeticiones}>Continuar sin reconocer</button>
+              <button className="primario" onClick={reconocerYRevisar}>
+                Reconocer y revisar
               </button>
             </>
           )}
