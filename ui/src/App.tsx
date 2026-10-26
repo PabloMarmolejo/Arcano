@@ -298,10 +298,6 @@ export function App() {
   const cuerpo = (
     <div className="app">
       <header className="barra">
-        <div className="marca" title="Arcano · Generador de versiones públicas">
-          Arcano
-          {!doc && <span className="marca-subtitulo">Generador de versiones públicas</span>}
-        </div>
         <button onClick={() => abrir()} title="Abrir PDF o Word (Ctrl+O)">
           Abrir…
         </button>

@@ -134,12 +134,6 @@ input[type='checkbox'] {
   min-height: 52px;
   flex-wrap: wrap;
 }
-.marca {
-  font-weight: 700;
-  color: var(--acento);
-  letter-spacing: 0.02em;
-  margin-right: 8px;
-}
 .nombre-doc {
   max-width: 280px;
   overflow: hidden;
@@ -218,12 +212,6 @@ input[type='checkbox'] {
 }
 .bienvenida .logo {
   border-radius: 22px;
-}
-.marca-subtitulo {
-  font-weight: 400;
-  color: var(--texto-2);
-  margin-left: 10px;
-  letter-spacing: 0;
 }
 .bienvenida p {
   color: var(--texto-2);
