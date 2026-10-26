@@ -906,3 +906,27 @@ button.peligro:hover:not(:disabled) {
   margin-left: 4px;
   white-space: nowrap;
 }
+
+/* Aviso de versión nueva */
+button.aviso-version {
+  border-color: var(--exito);
+  background: var(--exito-suave);
+  color: var(--exito);
+  font-weight: 600;
+  font-size: 13px;
+}
+button.aviso-version:hover:not(:disabled) {
+  background: #d3ecdf;
+  border-color: var(--exito);
+}
+.notas-version {
+  white-space: pre-wrap;
+  max-height: 40vh;
+  overflow-y: auto;
+  font-size: 13px;
+  color: var(--texto-2);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+}

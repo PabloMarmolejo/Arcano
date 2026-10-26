@@ -156,3 +156,11 @@ export interface ResultadoGeneracion {
     hallazgos: Hallazgo[]
   }
 }
+
+export interface ActualizacionDisponible {
+  version: string
+  notas?: string | null
+  /** Instalado con el instalador: se actualiza en un paso. Si no, solo se ofrece la descarga. */
+  instalable: boolean
+  pagina?: string | null
+}

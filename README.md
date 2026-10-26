@@ -123,6 +123,22 @@ El equipo destino necesita Windows 10/11 con WebView2 Runtime (viene con Edge)
 y Visual C++ 2015-2022 x64 (lo usa el OCR). Para abrir Word, Microsoft Word o
 LibreOffice. Al desinstalar se conservan el catálogo y las preferencias.
 
+**Actualizaciones.** Al abrirse, Arcano busca una versión más nueva y, si la
+hay, muestra «Versión X disponible» en la barra superior. Con *Actualizar
+ahora* descarga el instalador, comprueba su huella SHA-256, se cierra, se
+instala en silencio y se vuelve a abrir (la versión portátil solo ofrece la
+descarga). La fuente se configura con un archivo `actualizaciones.json` junto a
+`Arcano.exe`:
+
+```json
+{ "manifiesto": "https://mi-cuenta.blob.core.windows.net/arcano/version.json" }
+```
+
+donde `version.json` es
+`{ "version": "0.4.0", "instalador": "https://…/Arcano-0.4.0-instalador.exe", "sha256": "…", "notas": "…" }`.
+Sin ese archivo se consultan las Releases de este repositorio (el instalador
+debe llamarse `*-instalador.exe`); con `{ "desactivadas": true }` no se busca.
+
 **Firma.** El instalador no está firmado: al abrirlo después de descargarlo,
 Windows SmartScreen muestra «Windows protegió su equipo». Se continúa con
 *Más información → Ejecutar de todas formas*. Si se copia desde una carpeta de

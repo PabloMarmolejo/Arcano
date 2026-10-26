@@ -5,8 +5,9 @@ import { estadoInicial, idsDelGrupo, reductor } from './estado'
 import { cargarPdf } from './pdf'
 import type { DocumentoPdf } from './pdf'
 import { alProgreso, enEscritorio, ErrorPuente, llamar } from './puente'
-import type { Coincidencia, DatosLeyenda, DocumentoAbierto, InfoPagina, Inicio, Palabra, Progreso, RectN } from './tipos'
+import type { ActualizacionDisponible, Coincidencia, DatosLeyenda, DocumentoAbierto, InfoPagina, Inicio, Palabra, Progreso, RectN } from './tipos'
 import { SelectorCategoria } from './componentes/Comunes'
+import { DialogoActualizacion } from './componentes/DialogoActualizacion'
 import { DialogoCatalogo } from './componentes/DialogoCatalogo'
 import { DialogoGenerar } from './componentes/DialogoGenerar'
 import { Miniaturas } from './componentes/Miniaturas'
@@ -47,6 +48,8 @@ export function App() {
   const [leyenda, setLeyenda] = useState<DatosLeyenda>(leyendaVacia)
   const [generando, setGenerando] = useState(false)
   const [editandoCatalogo, setEditandoCatalogo] = useState(false)
+  const [actualizacion, setActualizacion] = useState<ActualizacionDisponible | null>(null)
+  const [viendoActualizacion, setViendoActualizacion] = useState(false)
   const [tarea, setTarea] = useState<Progreso | null>(null)
   const [avisos, setAvisos] = useState<Aviso[]>([])
   const [confirmacion, setConfirmacion] = useState<{ texto: string; si: string; no: string; resolver: (r: boolean) => void } | null>(null)
@@ -69,6 +72,10 @@ export function App() {
         setInicio(i)
         setLeyenda({ ...leyendaVacia, ...i.preferencias.leyenda })
         if (i.archivoInicial) void abrir(i.archivoInicial)
+        // Sin bloquear el arranque: si no hay red, simplemente no se avisa.
+        llamar<ActualizacionDisponible | null>('buscarActualizacion')
+          .then(setActualizacion)
+          .catch(() => {})
       })
       .catch((e: Error) => setErrorInicio(e.message))
   }, [])
@@ -80,7 +87,7 @@ export function App() {
   // Solo se muestra el avance de tareas que abrió esta ventana (abrir, OCR); el
   // diálogo de generar muestra el suyo.
   useEffect(
-    () => alProgreso((p) => (p.etapa === 'ocr' || p.etapa === 'conversion' ? setTarea((actual) => (actual ? p : actual)) : undefined)),
+    () => alProgreso((p) => (p.etapa === 'ocr' || p.etapa === 'conversion' || p.etapa === 'actualizacion' ? setTarea((actual) => (actual ? p : actual)) : undefined)),
     [],
   )
 
@@ -137,6 +144,20 @@ export function App() {
       avisar((e as ErrorPuente).message, 'error')
     }
   }, [doc, estado.regiones, terminos, leyenda, avisar])
+
+  const actualizar = async () => {
+    setViendoActualizacion(false)
+    if (doc && estado.pendientes) await guardarProyecto()
+    setTarea({ etapa: 'actualizacion', actual: 0, total: 1, detalle: 'Descargando la versión nueva…' })
+    try {
+      await llamar('instalarActualizacion')
+      setTarea({ etapa: 'actualizacion', actual: 1, total: 1, detalle: 'Instalando; Arcano se volverá a abrir…' })
+    } catch (e) {
+      const err = e as ErrorPuente
+      avisar(err.cancelado ? 'Se canceló la actualización.' : err.message, err.cancelado ? 'info' : 'error')
+      setTarea(null)
+    }
+  }
 
   const reconocer = async (paginas: number[]): Promise<InfoPagina[] | null> => {
     if (!doc) return null
@@ -282,6 +303,11 @@ export function App() {
         <button onClick={() => setEditandoCatalogo(true)} title="Categorías, motivación y fundamentos de la leyenda">
           Catálogo
         </button>
+        {actualizacion && (
+          <button className="aviso-version" onClick={() => setViendoActualizacion(true)} title="Ver la versión nueva">
+            Versión {actualizacion.version.replace(/^v/i, '')} disponible
+          </button>
+        )}
         {contexto && doc && (
           <>
             <button onClick={guardarProyecto} disabled={!estado.pendientes} title="Guardar el trabajo junto al documento (Ctrl+S)">
@@ -398,6 +424,17 @@ export function App() {
         </>
       )}
 
+      {viendoActualizacion && actualizacion && (
+        <DialogoActualizacion
+          actualizacion={actualizacion}
+          versionActual={inicio.version}
+          hayCambios={!!doc && estado.pendientes}
+          alActualizar={actualizar}
+          alDescargar={() => actualizacion.pagina && void llamar('abrirArchivo', { ruta: actualizacion.pagina })}
+          alCerrar={() => setViendoActualizacion(false)}
+        />
+      )}
+
       {editandoCatalogo && (
         <DialogoCatalogo
           catalogo={inicio.catalogo}
@@ -414,7 +451,7 @@ export function App() {
             <div className="modal-cuerpo">
               <p>{tarea.detalle ?? 'Trabajando…'}</p>
               {tarea.total > 1 && <progress max={tarea.total} value={tarea.actual} />}
-              {tarea.etapa === 'ocr' && (
+              {(tarea.etapa === 'ocr' || tarea.etapa === 'actualizacion') && (
                 <footer>
                   <button onClick={() => llamar('cancelar')}>Cancelar</button>
                 </footer>

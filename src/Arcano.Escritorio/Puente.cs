@@ -37,6 +37,7 @@ public sealed class Puente : IDisposable
     private readonly Dictionary<string, SesionDocumento> _sesiones = [];
     private readonly IConvertidorDocumentos _convertidor = new ConvertidorDocumentos();
     private readonly Lazy<(ReconocedorTesseract? Ocr, string? Error)> _ocr = new(CrearOcr);
+    private readonly Actualizador _actualizador = new();
     private readonly string _rutaCatalogo = Path.Combine(App.CarpetaDatos, "catalogo.json");
     private readonly string _rutaPreferencias = Path.Combine(App.CarpetaDatos, "preferencias.json");
     private CatalogoDatos _catalogo;
@@ -104,6 +105,8 @@ public sealed class Puente : IDisposable
         "importarCatalogo" => Sincrono(ImportarCatalogo),
         "exportarCatalogo" => Sincrono(() => ExportarCatalogo(Leer<CatalogoDatos>(a, "catalogo"))),
         "guardarPreferencias" => Sincrono(() => GuardarPreferencias(a)),
+        "buscarActualizacion" => BuscarActualizacionAsync(),
+        "instalarActualizacion" => InstalarActualizacionAsync(),
         _ => throw new NotSupportedException($"Método desconocido: {metodo}"),
     };
 
@@ -239,6 +242,18 @@ public sealed class Puente : IDisposable
         var progreso = new Progress<Progreso>(Progreso);
         var generador = new GeneradorVersionPublica(opciones.CapaTexto ? _ocr.Value.Ocr : null);
         return await Task.Run(() => generador.Generar(sesion, regiones, _catalogo, opciones, salida, progreso, cts.Token));
+    }
+
+    private async Task<object?> BuscarActualizacionAsync() => await _actualizador.BuscarAsync();
+
+    /// <summary>Descarga e inicia el instalador; después se cierra Arcano para que pueda reemplazarse.</summary>
+    private async Task<object?> InstalarActualizacionAsync()
+    {
+        using var cts = NuevaCancelacion();
+        await _actualizador.InstalarAsync(new Progress<Progreso>(Progreso), cts.Token);
+        HayCambiosSinGuardar = false;
+        _ = _ventana.Dispatcher.InvokeAsync(() => System.Windows.Application.Current.Shutdown(), System.Windows.Threading.DispatcherPriority.Background);
+        return null;
     }
 
     private object? GuardarPreferencias(JsonObject a)

@@ -88,6 +88,8 @@ Root: HKA; Subkey: "Software\Classes\.odt\OpenWithProgids"; ValueType: string; V
 
 [Run]
 Filename: "{app}\Arcano.exe"; Description: "Abrir Arcano"; Flags: nowait postinstall skipifsilent
+; Cuando el propio programa se actualiza (instalación silenciosa con /REABRIR), se vuelve a abrir.
+Filename: "{app}\Arcano.exe"; Flags: nowait; Check: DebeReabrir
 
 [UninstallDelete]
 ; El catálogo y las preferencias del usuario (%LOCALAPPDATA%\Arcano) se conservan a propósito.
@@ -122,6 +124,11 @@ var
   Codigo: Integer;
 begin
   ShellExec('open', Url, '', '', SW_SHOWNORMAL, ewNoWait, Codigo);
+end;
+
+function DebeReabrir(): Boolean;
+begin
+  Result := Pos('/REABRIR', Uppercase(GetCmdTail)) > 0;
 end;
 
 function DesinstaladorDeTestado(var Comando: String): Boolean;

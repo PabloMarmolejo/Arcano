@@ -9,7 +9,7 @@
     <Authors>Luis Pablo Marmolejo Ramírez</Authors>
     <Product>Arcano - Generador de versiones públicas</Product>
     <Copyright>Copyright © 2026 Luis Pablo Marmolejo Ramírez</Copyright>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
 
     <!-- Análisis de código -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
