@@ -72,9 +72,14 @@ export function App() {
         setInicio(i)
         setLeyenda({ ...leyendaVacia, ...i.preferencias.leyenda })
         if (i.archivoInicial) void abrir(i.archivoInicial)
-        // Sin bloquear el arranque: si no hay red, simplemente no se avisa.
+        // Sin bloquear el arranque: si no hay red, simplemente no se avisa. Si se
+        // abrió sin documento, el aviso se muestra de una vez; si se abrió con uno,
+        // queda solo el botón de la barra para no interrumpir.
         llamar<ActualizacionDisponible | null>('buscarActualizacion')
-          .then(setActualizacion)
+          .then((a) => {
+            setActualizacion(a)
+            if (a && !i.archivoInicial) setViendoActualizacion(true)
+          })
           .catch(() => {})
       })
       .catch((e: Error) => setErrorInicio(e.message))
