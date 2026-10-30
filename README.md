@@ -10,6 +10,10 @@ Testa datos personales en documentos PDF o Word de autoridades mexicanas y
 produce un PDF nuevo en el que **lo testado no existe**: no hay texto debajo de
 los recuadros ni capas que se puedan quitar.
 
+[![Arcano en 40 segundos: detectar, buscar, vista previa y versión pública](recursos/promo/arcano-promo.jpg)](recursos/promo/arcano-promo.mp4)
+
+▶ [Ver el video (39 s)](recursos/promo/arcano-promo.mp4) · documento de ejemplo con datos ficticios
+
 > Hasta la versión 0.1 se llamó *Testado*. Arcano lee los trabajos `.testado`
 > y conserva el catálogo capturado.
 
